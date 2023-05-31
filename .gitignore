@@ -1,0 +1,16 @@
+### Example user template template
+### Example user template
+
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
+*.properties
+*.xml
+/src/main/resources/*
+/target
+*.jar
+.DS_Store
+/resources/*
+resources/*
