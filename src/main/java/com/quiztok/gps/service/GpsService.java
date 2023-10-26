@@ -15,4 +15,10 @@ public interface GpsService {
     public Map<String, Object> getSpotHistory(String authorization);
 
     public void test(int n);
+
+    public  int randomFigure();
+    public Map<String , Object> getGpsFindMemberTest(String uidx , UserVo userGps);
+
+
+
 }

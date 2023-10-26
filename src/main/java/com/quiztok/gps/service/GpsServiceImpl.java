@@ -34,7 +34,10 @@ public class GpsServiceImpl implements  GpsService {
     private String POINT_URL;
 
 
-    private int[] bonusMember = {3,3,3,3,3,3,2,1};
+    //private int[] bonusMember = {3,3,3,3,3,3,2,1};
+    private int[] bonusMember = {3,2,1};
+
+    private int[] bonusPoint = {51, 51, 51, 51, 51, 51, 51, 51,51, 51, 51, 51,51, 51, 51, 51,51, 51, 51, 51 , 55 , 56,  100 , 100, 100,200 , 200, 300,300, 400, 500 };
 
     private String[] setBonusMember(int memCount){
 
@@ -53,12 +56,10 @@ public class GpsServiceImpl implements  GpsService {
                 bonusMemberName = new String[]{"bonus"};
                 break;
         }
-
         return bonusMemberName;
     }
 
     public Map<String , Object> getGpsFindMember(String authorization , UserVo userGps){
-
         Map nResult = new HashMap();
 
         try {
@@ -70,6 +71,7 @@ public class GpsServiceImpl implements  GpsService {
             ResponseEntity userInfo =  restService.getRestGetHeaderService(url , params, headerInfo);
             Map<String , Object> userData = (Map<String, Object>) userInfo.getBody();
 
+            System.out.println("user data: "+userData);
 
             UserVo userVo = new UserVo();
             userVo.setId(userData.get("id").toString());
@@ -120,14 +122,14 @@ public class GpsServiceImpl implements  GpsService {
                     List<QSpotHistoryVo> qSpotHistory =  gpsApiMapper.getQSpotMember(countqSpotVo);
 
                     for(QSpotHistoryVo qSpotHistoryVo : qSpotHistory){
+                        int point = randomFigure();
                         Map addData = new HashMap();
                         addData.put("id", qSpotHistoryVo.getNum());
                         addData.put("lat", qSpotHistoryVo.getLat());
                         addData.put("lng", qSpotHistoryVo.getLng());
                         addData.put("nickName",qSpotHistoryVo.getNickName() );
-                        addData.put("point", qSpotHistoryVo.getPoint());
+                        addData.put("point", point);
                         addData.put("type", qSpotHistoryVo.getType());
-                        //addData.put("id", qSpotHistoryVo.getUserId());
                         addData.put("distance", qSpotHistoryVo.getDistance());
                         addData.put("isReceived", qSpotHistoryVo.getReceived());
                         locationPoints.add(addData);
@@ -135,7 +137,7 @@ public class GpsServiceImpl implements  GpsService {
                 } else { // 인근 사용자 호출 및 저장
                     ArrayList findMember = gpsApiMapper.getGpsFindQuizTokMember(userVo);
                     System.out.println("cnt2:"+findMember.size());
-                    if(findMember.size()<8){
+                    if(findMember.size()<3){
                         addFindMember(findMember);
                     }
                     System.out.println("cnt3:"+findMember.size());
@@ -144,13 +146,16 @@ public class GpsServiceImpl implements  GpsService {
                     qSpotVo.setUserId(userVo.getId());
                     qSpotVo.setSpotCnt(findMember.size());
                     qSpotVo.setSpotStatus("N");
+
                     gpsApiMapper.saveQSpot(qSpotVo);
+
                     System.out.println("qSpotId:"+ qSpotVo.getIdx());
                     nResult.put("qSpotId", qSpotVo.getIdx());
                     ObjectMapper objectMapper = new ObjectMapper();
                     Collections.shuffle(findMember);
                     int i = 1;
                     for(Object obj : findMember){
+                        int point = randomFigure();
                         GpsFindMemberVo gpsFindMemberVo = objectMapper.convertValue(obj, GpsFindMemberVo.class);
                         QSpotHistoryVo qSpotHistoryVo = new QSpotHistoryVo();
                         qSpotHistoryVo.setqSpotIdx(qSpotVo.getIdx());
@@ -158,7 +163,7 @@ public class GpsServiceImpl implements  GpsService {
                         qSpotHistoryVo.setLat(gpsFindMemberVo.getLat());
                         qSpotHistoryVo.setLng(gpsFindMemberVo.getLng());
                         qSpotHistoryVo.setNickName(gpsFindMemberVo.getNickName());
-                        qSpotHistoryVo.setPoint(gpsFindMemberVo.getPoint());
+                        qSpotHistoryVo.setPoint(point);
                         qSpotHistoryVo.setType(gpsFindMemberVo.getType());
                         qSpotHistoryVo.setUserId(gpsFindMemberVo.getId());
                         qSpotHistoryVo.setDistance(gpsFindMemberVo.getDistance());
@@ -170,15 +175,32 @@ public class GpsServiceImpl implements  GpsService {
                         addData.put("lat", qSpotHistoryVo.getLat());
                         addData.put("lng", qSpotHistoryVo.getLng());
                         addData.put("nickName",qSpotHistoryVo.getNickName() );
-                        addData.put("point", qSpotHistoryVo.getPoint());
+                        addData.put("point", point);
                         addData.put("type", qSpotHistoryVo.getType());
-                        //addData.put("id", qSpotHistoryVo.getUserId());
                         addData.put("distance", qSpotHistoryVo.getDistance());
                         addData.put("isReceived", qSpotHistoryVo.getReceived());
                         locationPoints.add(addData);
                         i++;
                     }
                 }
+
+                int getAvailableCount = gpsApiMapper.getAvailableCount(userVo);
+//                System.out.println("getAvailableCount:"+getAvailableCount);
+//                int availableCount = (getAvailableCount==0)?1:(getAvailableCount);
+//                availableCount = (3-availableCount);
+
+//                getAvailableCount = 3;
+                System.out.println("getAvailableCount:"+getAvailableCount);
+                int availableCount;
+                if(getAvailableCount>3){
+                    availableCount = 0;
+                } else {
+                    availableCount = getAvailableCount;
+                    availableCount = (3-availableCount);
+                }
+
+
+
                 GivePointVo givePointVo = new GivePointVo();
                 givePointVo.setqSpotId(Integer.parseInt(nResult.get("qSpotId").toString()));
                 //int accumulatedPoint =  gpsApiMapper.getAccumulatedPoint(givePointVo);
@@ -186,14 +208,16 @@ public class GpsServiceImpl implements  GpsService {
                 int givePoint = accumulatedPoint;
 
                 nResult.put("totalPoint", givePoint);
-                //nResult.put("accumulatedPoint",givePoint);
                 nResult.put("locationPoints", locationPoints);
-                //nResult.put("code",200);
-                //nResult.put("msg", "조회 성공");
-            } else {
-                //nResult.put("code",400);
-                //nResult.put("mag", "회원 정보 호출 오류");
+                if(availableCount<=0){
+                    locationPoints = new ArrayList();
+                    nResult.put("locationPoints", locationPoints);
+                }
+
+                nResult.put("availableCount", availableCount);
+                System.out.println("availableCount:"+ availableCount);
             }
+
         } catch (Exception e){
            // nResult.put("code", 500);
            // nResult.put("msg", e.getMessage());
@@ -209,11 +233,12 @@ public class GpsServiceImpl implements  GpsService {
 
         String[] typeNamesArr = setBonusMember(findMember.size());
         for (int i = 0; i < typeNamesArr.length; i++) {
+            int point = randomFigure();
             Map addData = new HashMap();
             addData.put("lat", 0.0);
             addData.put("lng", 0.0);
-            addData.put("nickName","큐몽 "+randomFigure() );
-            addData.put("point", randomFigure());
+            addData.put("nickName","큐몽 "+(randomFigure()+i) );
+            addData.put("point", point);
             addData.put("type", typeNamesArr[i]);
             addData.put("distance", "");
             addData.put("received", false);
@@ -224,11 +249,14 @@ public class GpsServiceImpl implements  GpsService {
 
 
 
-    private int randomFigure(){
-        double min = 150;
-        double max = 1000;
-        int random = (int) ((Math.random() * (max - min)) + min);
-        return random;
+    public int randomFigure(){
+        int min = 50;
+        Random random = new Random();
+        int max = bonusPoint[random.nextInt(30)];
+        //Random random = new Random();
+        return random.ints(min, max)
+                .findFirst()
+                .getAsInt();
     }
 
 
@@ -282,6 +310,8 @@ public class GpsServiceImpl implements  GpsService {
                 params.put("targetId", uidx);
                 params.put("requestPoint", qSpotHistoryVo.getPoint());
                 params.put("pointType", "EVENT");
+                params.put("subType", "EVENT_QSPOT");
+
 
                 String res = restService.getRestPostJsonService(url ,params );
                 if (res.equals("0.0")){
@@ -348,10 +378,163 @@ public class GpsServiceImpl implements  GpsService {
     }
 
     public void test(int n){
-
         System.out.println();
+    }
 
 
+    public Map<String , Object> getGpsFindMemberTest(String uidx , UserVo userGps){
+
+        Map nResult = new HashMap();
+
+        try {
+
+
+            UserVo userVo = new UserVo();
+            userVo.setId(uidx);
+            if(!uidx.isBlank()){
+                boolean renewal = true;
+                int userCntLog = gpsApiMapper.getCntGSpotTermTime(userVo);
+                if(userCntLog>0){
+
+                    SpotTermCheckVo getPointTerm = gpsApiMapper.getGSpotTermTime(userVo);
+                    System.out.println("getPointTerm:"+ getPointTerm);
+                    if(getPointTerm.getTime()==null && getPointTerm.getCnt()<=0){ // 최초 값이 없어서 null  인 경우
+
+                        renewal=true;
+                        nResult.put("waitMinute", 0);
+                    } else if (getPointTerm.getTime()==null && getPointTerm.getCnt()>0){ // 값은 있으나 null 인 경우
+                        renewal=false;
+                        nResult.put("waitMinute", 0);
+                        System.out.println("f 1");
+                    } else {
+                        if(Integer.parseInt(getPointTerm.getTime()) >=POINT_TERM) {
+                            renewal=true;
+                            nResult.put("waitMinute", 0);
+                        } else {
+                            renewal=false;
+                            nResult.put("waitMinute", (POINT_TERM-Integer.parseInt(getPointTerm.getTime())));
+                            System.out.println("f 2");
+                        }
+                    }
+                }
+                System.out.println("renewal:"+ renewal);
+                UserVo userDetailInfo = gpsApiMapper.getUserDetailInfo(userVo);
+                // nResult.put("totalPoint", Integer.parseInt( userDetailInfo.getPoint()));
+                nResult.put("profileImgPath", "https://quiztok.s3.ap-northeast-2.amazonaws.com/"+userDetailInfo.getImgKey());
+                userVo.setLatitude(userGps.getLatitude());
+                userVo.setLongitude(userGps.getLongitude());
+
+
+                CountqSpotVo spotCount = gpsApiMapper.getCountqSpot(userVo);
+                ArrayList locationPoints = new ArrayList();
+
+                nResult.put("qSpotId", spotCount.getIdx());
+                System.out.println("cnt:"+ spotCount.getCount());
+
+                if(renewal==false){ // 저장된 인근 사용자 조회
+
+                    CountqSpotVo countqSpotVo = gpsApiMapper.getCountqSpot(userVo);
+
+                    List<QSpotHistoryVo> qSpotHistory =  gpsApiMapper.getQSpotMember(countqSpotVo);
+
+                    for(QSpotHistoryVo qSpotHistoryVo : qSpotHistory){
+                        int point = randomFigure();
+                        Map addData = new HashMap();
+                        addData.put("id", qSpotHistoryVo.getNum());
+                        addData.put("lat", qSpotHistoryVo.getLat());
+                        addData.put("lng", qSpotHistoryVo.getLng());
+                        addData.put("nickName",qSpotHistoryVo.getNickName() );
+                        addData.put("point", point);
+                        addData.put("type", qSpotHistoryVo.getType());
+                        addData.put("distance", qSpotHistoryVo.getDistance());
+                        addData.put("isReceived", qSpotHistoryVo.getReceived());
+                        locationPoints.add(addData);
+                    }
+                } else { // 인근 사용자 호출 및 저장
+                    ArrayList findMember = gpsApiMapper.getGpsFindQuizTokMember(userVo);
+                    System.out.println("cnt2:"+findMember.size());
+                    if(findMember.size()<3){
+                        addFindMember(findMember);
+                    }
+                    System.out.println("cnt3:"+findMember.size());
+                    System.out.println(findMember);
+                    QSpotVo qSpotVo  = new QSpotVo();
+                    qSpotVo.setUserId(userVo.getId());
+                    qSpotVo.setSpotCnt(findMember.size());
+                    qSpotVo.setSpotStatus("N");
+
+                    gpsApiMapper.saveQSpot(qSpotVo);
+
+                    System.out.println("qSpotId:"+ qSpotVo.getIdx());
+                    nResult.put("qSpotId", qSpotVo.getIdx());
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    Collections.shuffle(findMember);
+                    int i = 1;
+                    for(Object obj : findMember){
+                        int point = randomFigure();
+                        GpsFindMemberVo gpsFindMemberVo = objectMapper.convertValue(obj, GpsFindMemberVo.class);
+                        QSpotHistoryVo qSpotHistoryVo = new QSpotHistoryVo();
+                        qSpotHistoryVo.setqSpotIdx(qSpotVo.getIdx());
+                        qSpotHistoryVo.setNum(i);
+                        qSpotHistoryVo.setLat(gpsFindMemberVo.getLat());
+                        qSpotHistoryVo.setLng(gpsFindMemberVo.getLng());
+                        qSpotHistoryVo.setNickName(gpsFindMemberVo.getNickName());
+                        qSpotHistoryVo.setPoint(point);
+                        qSpotHistoryVo.setType(gpsFindMemberVo.getType());
+                        qSpotHistoryVo.setUserId(gpsFindMemberVo.getId());
+                        qSpotHistoryVo.setDistance(gpsFindMemberVo.getDistance());
+                        qSpotHistoryVo.setReceived(false);
+                        gpsApiMapper.saveQSpotHistory(qSpotHistoryVo);
+
+                        Map addData = new HashMap();
+                        addData.put("id", i);
+                        addData.put("lat", qSpotHistoryVo.getLat());
+                        addData.put("lng", qSpotHistoryVo.getLng());
+                        addData.put("nickName",qSpotHistoryVo.getNickName() );
+                        addData.put("point", point);
+                        addData.put("type", qSpotHistoryVo.getType());
+                        addData.put("distance", qSpotHistoryVo.getDistance());
+                        addData.put("isReceived", qSpotHistoryVo.getReceived());
+                        locationPoints.add(addData);
+                        i++;
+                    }
+                }
+                int getAvailableCount = gpsApiMapper.getAvailableCount(userVo);
+
+
+//                getAvailableCount = 3;
+                System.out.println("getAvailableCount:"+getAvailableCount);
+                int availableCount;
+                if(getAvailableCount>3){
+                    availableCount = 0;
+                } else {
+                    availableCount = getAvailableCount;
+                    availableCount = (3-availableCount);
+                }
+
+
+
+
+
+                GivePointVo givePointVo = new GivePointVo();
+                givePointVo.setqSpotId(Integer.parseInt(nResult.get("qSpotId").toString()));
+                //int accumulatedPoint =  gpsApiMapper.getAccumulatedPoint(givePointVo);
+                int accumulatedPoint =  gpsApiMapper.getQSpotUserTotalPoint(uidx);
+                int givePoint = accumulatedPoint;
+
+                nResult.put("totalPoint", givePoint);
+                nResult.put("locationPoints", locationPoints);
+                nResult.put("availableCount", availableCount);
+                System.out.println("availableCount:"+ availableCount);
+            }
+
+        } catch (Exception e){
+            // nResult.put("code", 500);
+            // nResult.put("msg", e.getMessage());
+
+        }
+
+        return  nResult;
     }
 
 }

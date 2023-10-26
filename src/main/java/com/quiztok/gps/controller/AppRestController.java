@@ -35,6 +35,15 @@ public class AppRestController {
     }
 
 
+    @GetMapping("/test")
+    public void  randomFigure(){
 
+        System.out.println(gpsService.randomFigure());
+    }
+
+    @PostMapping("/gps/findMemberTest")
+    public Map<String , Object> getGpsFindMemberTest(@RequestHeader("uidx") String uidx , @RequestBody UserVo userVo ){
+        return  gpsService.getGpsFindMemberTest(uidx , userVo);
+    }
 
 }

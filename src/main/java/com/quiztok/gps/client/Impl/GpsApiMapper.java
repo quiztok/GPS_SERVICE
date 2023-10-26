@@ -44,4 +44,6 @@ public interface GpsApiMapper {
     int getQSpotUserTotalPoint(String userId);
 
     int getTotalCntSpotHistory(GivePointVo givePointVo);
+
+    int getAvailableCount(UserVo userVo);
 }
