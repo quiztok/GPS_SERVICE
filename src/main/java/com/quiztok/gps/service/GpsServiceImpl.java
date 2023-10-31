@@ -192,7 +192,7 @@ public class GpsServiceImpl implements  GpsService {
 //                getAvailableCount = 3;
                 System.out.println("getAvailableCount:"+getAvailableCount);
                 int availableCount;
-                if(getAvailableCount>3){
+                if(getAvailableCount>=3){
                     availableCount = 0;
                 } else {
                     availableCount = getAvailableCount;
