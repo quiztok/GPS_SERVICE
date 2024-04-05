@@ -308,6 +308,9 @@ public class GpsServiceImpl implements  GpsService {
                 String url = POINT_URL+"/point";
                 JSONObject params = new JSONObject();
                 params.put("targetId", uidx);
+                params.put("playerId", uidx);
+
+
                 params.put("requestPoint", qSpotHistoryVo.getPoint());
                 params.put("pointType", "EVENT");
                 params.put("subType", "EVENT_QSPOT");
