@@ -73,6 +73,7 @@ public class GpsServiceImpl implements  GpsService {
 
             System.out.println("user data: "+userData);
 
+
             UserVo userVo = new UserVo();
             userVo.setId(userData.get("id").toString());
             if(!userData.get("id").toString().isBlank()){
@@ -114,6 +115,7 @@ public class GpsServiceImpl implements  GpsService {
 
                 nResult.put("qSpotId", spotCount.getIdx());
                 System.out.println("cnt:"+ spotCount.getCount());
+                System.out.println("renewal:"+ renewal);
 
                 if(renewal==false){ // 저장된 인근 사용자 조회
 
@@ -219,8 +221,8 @@ public class GpsServiceImpl implements  GpsService {
             }
 
         } catch (Exception e){
-           // nResult.put("code", 500);
-           // nResult.put("msg", e.getMessage());
+            nResult.put("code", 500);
+            nResult.put("msg", e.getMessage());
 
         }
 
