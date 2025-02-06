@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/")
+//@RequestMapping("/api/")
 public class AppRestController {
 
     @Autowired
@@ -19,7 +19,7 @@ public class AppRestController {
     }
 
     @PostMapping("/user/updatePosition")
-    public Map<String, Object> saveUserPosition(@RequestHeader("Authorization") String authorization, @RequestBody UserVo userVo){
+    public Map<String, Object> saveUserPosition(@RequestHeader(value = "Authorization", required = false)String authorization, @RequestBody UserVo userVo){
       return  gpsService.saveUserPosition(authorization , userVo);
     }
 

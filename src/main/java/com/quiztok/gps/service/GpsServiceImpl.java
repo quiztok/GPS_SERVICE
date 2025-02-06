@@ -67,7 +67,9 @@ public class GpsServiceImpl implements  GpsService {
             HashMap<String, String> headerInfo = new HashMap<String, String>();
             MultiValueMap params = new LinkedMultiValueMap<>();
             HashMap<String, Object> getUserDataMap = new HashMap<String, Object>();
+            System.out.println("token: "+authorization);
             headerInfo.put("Authorization", authorization);
+
             ResponseEntity userInfo =  restService.getRestGetHeaderService(url , params, headerInfo);
             Map<String , Object> userData = (Map<String, Object>) userInfo.getBody();
 
